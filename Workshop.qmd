@@ -1,0 +1,123 @@
+---
+title: "Advanced exploratory visualization techniques using ggplot2, plotly and purrr"
+subtitle: "@rinpharma 2023"
+author: Omar Elashkar
+date: "10/27/2023"
+format: html
+---
+
+
+## Loading Libraries 
+
+```{r}
+library(nlmixr2)
+library(tidyverse)
+library(pmxTools)
+```
+
+
+## Data Exploration
+
+```{r}
+data(warfarin)
+# load pk/pd data
+warfarin <- warfarin |> 
+  mutate(id = as.factor(id)) |> 
+  mutate(dvid = as.factor(dvid)) |> 
+  mutate(wt_cat = cut( wt, c(min(wt)-1, median(wt), max(wt)+1), labels = c("low wt", "high wt"))) |> 
+  mutate(age_cat = cut( age, c(min(age)-1, median(age), max(age)+1), labels = c("young age", "old age")))  |>
+  mutate(amt = ifelse(amt == 0, NA, amt)) |> 
+  fill(amt, .direction = "down") |> 
+  filter(evid == 0) 
+```
+
+
+```{r}
+war_pk <- warfarin |> filter(dvid == "cp")
+
+war_pd <- warfarin |> filter(dvid == "pca")
+
+war_pkpd <- warfarin |> pivot_wider(names_from = dvid, values_from = dv, values_fn = median)
+
+war_clin <- war_pk |> 
+  select(id, wt, age, sex, wt_cat, age_cat) |> distinct()
+
+war_exposure <- get_auc(war_pk, time = "time", id = "id", dv = "dv")  |> left_join(war_clin)
+```
+
+
+## Exercise 1 
+
+-   Use `war_pk` data
+-   map `time` on x-axis, `dv` on y-axis and color to `id`
+-   try both `facet_wrap` and `facet grid` for `wt_cat~sex`
+  -   which once is better in this case?
+  
+```{r}
+
+```
+
+  
+
+## Exercise 2
+
+- Use `war_pd` data
+- map `time` on x-axis, `dv` on y-axis and `color` to id
+- `facet_grid` by wt_cat on y-axis and combination of sex and age_cat on x-axis
+- In facet, pass `margin = TRUE`
+
+
+```{r}
+
+```
+
+
+## Exercise 3 
+- Use the provided dataframe `points` to create the following figure. 
+- You will need `geom_polygon` for that.  Map `x`and `y`. choose the appropriate color and fill.
+- Use `annotate` to create the annotation text and curve.
+
+```{r}
+filter <- war_pk |> filter(id == 1)
+cmax <- max(filter$dv) # 10.8
+tmax <- filter$time[filter$dv == cmax] # 9
+points <- data.frame(x = c(8, 10, 10, 8), y = c(10, 10, 11, 11))
+
+## answer here
+
+
+```
+
+## Exercise 4 
+
+Create PD spaghetti plot colore by subject
+
+- data `war_pkpd`
+- map x to `cp` and y to `pca`
+- modify the text trace to include all relevant information; age, wt ...etc.
+
+```{r}
+
+```
+
+
+
+## Exercise 5
+Create interactive boxplot of PK data `war_pk` for each: sex, age_cat, wt_cat
+
+
+```{r}
+
+```
+
+
+## Exercise 6 
+
+- Create interactive grid plots for PK data `war_pk` split by ID using `map()`
+
+
+```{r}
+
+```
+
+
